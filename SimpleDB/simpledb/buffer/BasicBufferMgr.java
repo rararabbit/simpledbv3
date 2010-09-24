@@ -63,7 +63,7 @@ class BasicBufferMgr {
       if (!buff.isPinned())
          numAvailable--;
       buff.pin();
-      System.err.println(toString());
+      //System.err.println(toString());
       return buff;
    }
    
@@ -138,7 +138,7 @@ class BasicBufferMgr {
 		   }
 		   clockPosition=(clockPosition+1) % bufferpool.length;
 	   }
-	   System.err.println(clockPosition);
+	   //System.err.println(clockPosition);
 	   return out;
 //      for (Buffer buff : bufferpool)
 //         if (!buff.isPinned())
