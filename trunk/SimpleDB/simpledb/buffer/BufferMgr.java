@@ -121,4 +121,12 @@ public class BufferMgr {
    private boolean waitingTooLong(long starttime) {
       return System.currentTimeMillis() - starttime > MAX_TIME;
    }
+   
+   /**
+    * Outputs info for each buffer separated by blank lines
+    * @output the string with buffer info
+    */
+   public String toString() {
+	   return bufferMgr.toString();
+   }
 }

@@ -10,6 +10,7 @@ import simpledb.file.*;
 class BasicBufferMgr {
    private Buffer[] bufferpool;
    private int numAvailable;
+   private int clockPosition;
    
    /**
     * Creates a buffer manager having the specified number 
@@ -27,8 +28,9 @@ class BasicBufferMgr {
    BasicBufferMgr(int numbuffs) {
       bufferpool = new Buffer[numbuffs];
       numAvailable = numbuffs;
+      clockPosition = 0;
       for (int i=0; i<numbuffs; i++)
-         bufferpool[i] = new Buffer();
+         bufferpool[i] = new Buffer(i);
    }
    
    /**
@@ -61,6 +63,7 @@ class BasicBufferMgr {
       if (!buff.isPinned())
          numAvailable--;
       buff.pin();
+      System.err.println(toString());
       return buff;
    }
    
@@ -110,10 +113,48 @@ class BasicBufferMgr {
       return null;
    }
    
+   /**
+    * Chooses an unpinned buffer using the clock algorithm
+    * @return An unpinned buffer
+    */
    private Buffer chooseUnpinnedBuffer() {
-      for (Buffer buff : bufferpool)
-         if (!buff.isPinned())
-         return buff;
-      return null;
+	   //Are no unpinned buffers to return
+	   if (available() == 0)
+		   return null;
+	   
+	   Buffer out = null;
+	   Buffer buff = null;
+	   while (out == null) {
+		   buff = bufferpool[clockPosition];
+		   //Find an unpinned buffer
+		   if (!buff.isPinned()) {
+			   //Check reference flag, if it's clear then return the buffer
+			   //otherwise clear the flag
+			   if(buff.referenced())
+				   buff.clearReference();
+			   else {
+				   out = buff;
+			   }
+		   }
+		   clockPosition=(clockPosition+1) % bufferpool.length;
+	   }
+	   System.err.println(clockPosition);
+	   return out;
+//      for (Buffer buff : bufferpool)
+//         if (!buff.isPinned())
+//         return buff;
+//      return null;
+   }
+   
+   /**
+    * Outputs info for each buffer separated by blank lines
+    * @output the string with buffer info
+    */
+   public String toString(){
+	   String out = "";
+	   for (Buffer buff : bufferpool) {
+		   out = out + buff.toString() + "\n";
+	   }
+	   return out;
    }
 }
