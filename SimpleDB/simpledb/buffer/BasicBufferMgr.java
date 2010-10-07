@@ -53,7 +53,7 @@ class BasicBufferMgr {
     * @return the pinned buffer
     */
    synchronized Buffer pin(Block blk) {
-      Buffer buff = findExistingBuffer(blk);
+      Buffer buff = getMapping(blk);
       if (buff == null) {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
@@ -107,14 +107,7 @@ class BasicBufferMgr {
       return numAvailable;
    }
    
-   private Buffer findExistingBuffer(Block blk) {
-      for (Buffer buff : bufferpool) {
-         Block b = buff.block();
-         if (b != null && b.equals(blk))
-            return buff;
-      }
-      return null;
-   }
+ 
    
    /**
     * Chooses an unpinned buffer using the clock algorithm
