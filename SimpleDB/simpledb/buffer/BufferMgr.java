@@ -129,4 +129,10 @@ public class BufferMgr {
    public String toString() {
 	   return bufferMgr.toString();
    }
+   public boolean containsMapping(Block blk) {
+	   return bufferMgr.containsMapping(blk);
+	   }
+   public Buffer getMapping(Block blk) {
+	   return bufferMgr.getMapping(blk);
+	   }
 }
