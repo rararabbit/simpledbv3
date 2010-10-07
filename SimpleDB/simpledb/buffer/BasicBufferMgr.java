@@ -57,12 +57,14 @@ class BasicBufferMgr {
       if (buff == null) {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
-            return null;
-         buff.assignToBlock(blk);
+            return null;     
+         buff.assignToBlock(blk);    
       }
       if (!buff.isPinned())
          numAvailable--;
       buff.pin();
+      bufferPoolMap.remove(blk);
+      bufferPoolMap.put(blk, buff);
       //System.err.println(toString());
       return buff;
    }
@@ -80,9 +82,10 @@ class BasicBufferMgr {
       Buffer buff = chooseUnpinnedBuffer();
       if (buff == null)
          return null;
-      buff.assignToNew(filename, fmtr);
+      Block blk=buff.assignToNew(filename, fmtr);
       numAvailable--;
       buff.pin();
+      bufferPoolMap.put(blk, buff);
       return buff;
    }
    
@@ -121,7 +124,6 @@ class BasicBufferMgr {
 	   //Are no unpinned buffers to return
 	   if (available() == 0)
 		   return null;
-	   
 	   Buffer out = null;
 	   Buffer buff = null;
 	   while (out == null) {
@@ -157,4 +159,17 @@ class BasicBufferMgr {
 	   }
 	   return out;
    }
+   /**
+   * Determines whether the map has a mapping from
+   * the block to some buffer.
+   * @param blk the block to use as a key
+   * @return true if there is a mapping; false otherwise
+   */
+   boolean containsMapping(Block blk) {
+   return bufferPoolMap.containsKey(blk);
+   }
+   Buffer getMapping(Block blk) {
+	   return bufferPoolMap.get(blk);
+	   }
+   
 }
