@@ -1,7 +1,7 @@
 package simpledb.buffer;
 
 import simpledb.file.*;
-
+import java.util.*;
 /**
  * Manages the pinning and unpinning of buffers to blocks.
  * @author Edward Sciore
@@ -11,7 +11,7 @@ class BasicBufferMgr {
    private Buffer[] bufferpool;
    private int numAvailable;
    private int clockPosition;
-   
+   private Map<Block,Buffer> bufferPoolMap=new HashMap<Block,Buffer>(); 
    /**
     * Creates a buffer manager having the specified number 
     * of buffer slots.
