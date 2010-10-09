@@ -16,7 +16,7 @@ class BasicBufferMgr {
    /**
     * Creates a buffer manager having the specified number 
     * of buffer slots.
-    * creates bufferpoolmap for mappping the buffers with blocks.
+    * Creates bufferpoolmap for mappping the buffers with blocks.
     * This constructor depends on both the {@link FileMgr} and
     * {@link simpledb.log.LogMgr LogMgr} objects 
     * that it gets from the class
@@ -62,19 +62,10 @@ class BasicBufferMgr {
       if (buff == null) {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
-            return null;     
-         buff.assignToBlock(blk);  
-         Set<Block> blocks = bufferPoolMap.keySet();
-         for (Iterator<Block> i = blocks.iterator(); i.hasNext();) 
-         {
-        	 Block bk = (Block) i.next();
-             Buffer value = (Buffer) bufferPoolMap.get(bk);
-             if(buff.equals(value))
-             {
-            	 bufferPoolMap.remove(bk);
-                 break;
-             }
-         }
+            return null;    
+         Block bk=buff.getBlock();
+         bufferPoolMap.remove(bk);
+         buff.assignToBlock(blk);    
          bufferPoolMap.put(blk, buff);
       }
       if (!buff.isPinned())
@@ -99,17 +90,8 @@ class BasicBufferMgr {
       Buffer buff = chooseUnpinnedBuffer();
       if (buff == null)
          return null;
-      Set<Block> blocks = bufferPoolMap.keySet();
-      for (Iterator<Block> i = blocks.iterator(); i.hasNext();) 
-      {
-     	 Block bk = (Block) i.next();
-          Buffer value = (Buffer) bufferPoolMap.get(bk);
-          if(buff.equals(value))
-          {
-         	 bufferPoolMap.remove(bk);
-              break;
-          }
-      }
+      Block bk=buff.getBlock();
+      bufferPoolMap.remove(bk);
       Block blk=buff.assignToNew(filename, fmtr);
       numAvailable--;
       buff.pin();
