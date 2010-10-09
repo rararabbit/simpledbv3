@@ -13,6 +13,7 @@ class BasicBufferMgr {
    private int numAvailable;
    private int clockPosition;
    private Map<Block,Buffer> bufferPoolMap; 
+   
    /**
     * Creates a buffer manager having the specified number 
     * of buffer slots.
@@ -58,6 +59,11 @@ class BasicBufferMgr {
     * @return the pinned buffer
     */
    synchronized Buffer pin(Block blk) {
+	   System.out.println("BEFORE PIN----------------");
+	   System.out.println(blk + "\n");
+	   System.out.println(toString());
+	   System.out.println("----------------");
+	   
       Buffer buff = getMapping(blk);
       if (buff == null) {
          buff = chooseUnpinnedBuffer();
@@ -73,9 +79,16 @@ class BasicBufferMgr {
          numAvailable--;
       buff.pin();   
       //System.err.println(toString());
+      
+      System.out.println("AFTER PIN----------------");
+	   System.out.println(blk + "\n");
+	   System.out.println(toString());
+	   System.out.println("----------------\n\n\n\n\n");
+	   
       return buff;
    }
    
+  
    /**
     * Allocates a new block in the specified file, and
     * pins a buffer to it. 
@@ -122,7 +135,7 @@ class BasicBufferMgr {
  
    
    /**
-    * Chooses an unpinned buffer using the clock algorithm
+    * Chooses an unpinned buffer using the clock algorithm with maximum of 5 loops
     * @return An unpinned buffer
     */
    private Buffer chooseUnpinnedBuffer() {
@@ -131,7 +144,10 @@ class BasicBufferMgr {
 		   return null;
 	   Buffer out = null;
 	   Buffer buff = null;
-	   while (out == null) {
+	   int loops = 0;
+	   int startClockPos = clockPosition;
+	   while (out == null && loops < 5) {
+		   //System.out.println(loops);
 		   buff = bufferpool[clockPosition];
 		   //Find an unpinned buffer
 		   if (!buff.isPinned()) {
@@ -144,13 +160,10 @@ class BasicBufferMgr {
 			   }
 		   }
 		   clockPosition=(clockPosition+1) % bufferpool.length;
+		   if (clockPosition == startClockPos)
+			   loops++;
 	   }
-	   //System.err.println(clockPosition);
 	   return out;
-//      for (Buffer buff : bufferpool)
-//         if (!buff.isPinned())
-//         return buff;
-//      return null;
    }
    
    /**
@@ -164,6 +177,7 @@ class BasicBufferMgr {
 	   }
 	   return out;
    }
+   
    /**
    * Determines whether the map has a mapping from
    * the block to some buffer.
@@ -171,8 +185,9 @@ class BasicBufferMgr {
    * @return true if there is a mapping; false otherwise
    */
    boolean containsMapping(Block blk) {
-   return bufferPoolMap.containsKey(blk);
+	   return bufferPoolMap.containsKey(blk);
    }
+   
    /**
    * Returns the buffer that the map maps the specified block to.
    * @param blk the block to use as a key
@@ -180,6 +195,6 @@ class BasicBufferMgr {
    */
    Buffer getMapping(Block blk) {
 	   return bufferPoolMap.get(blk);
-	   }
+   }
    
 }

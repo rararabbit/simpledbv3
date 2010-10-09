@@ -40,8 +40,10 @@ public class Buffer {
 	   id = ID;
    }
    
-   /* Returns the block allocated to buffer.
-     */
+   /**
+    *  Returns the block allocated to buffer.
+    *  @return the block
+    */
    public Block getBlock(){
 	   return blk;
    }
