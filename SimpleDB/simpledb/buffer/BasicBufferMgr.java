@@ -59,11 +59,6 @@ class BasicBufferMgr {
     * @return the pinned buffer
     */
    synchronized Buffer pin(Block blk) {
-	   System.out.println("BEFORE PIN----------------");
-	   System.out.println(blk + "\n");
-	   System.out.println(toString());
-	   System.out.println("----------------");
-	   
       Buffer buff = getMapping(blk);
       if (buff == null) {
          buff = chooseUnpinnedBuffer();
@@ -78,12 +73,6 @@ class BasicBufferMgr {
       if (!buff.isPinned())
          numAvailable--;
       buff.pin();   
-      //System.err.println(toString());
-      
-      System.out.println("AFTER PIN----------------");
-	   System.out.println(blk + "\n");
-	   System.out.println(toString());
-	   System.out.println("----------------\n\n\n\n\n");
 	   
       return buff;
    }
