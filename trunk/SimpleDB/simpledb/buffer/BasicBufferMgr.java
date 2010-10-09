@@ -64,6 +64,7 @@ class BasicBufferMgr {
          if (buff == null)
             return null;    
          Block bk=buff.getBlock();
+         if(bk!=null)
          bufferPoolMap.remove(bk);
          buff.assignToBlock(blk);    
          bufferPoolMap.put(blk, buff);
@@ -91,6 +92,7 @@ class BasicBufferMgr {
       if (buff == null)
          return null;
       Block bk=buff.getBlock();
+      if(bk!=null)
       bufferPoolMap.remove(bk);
       Block blk=buff.assignToNew(filename, fmtr);
       numAvailable--;
