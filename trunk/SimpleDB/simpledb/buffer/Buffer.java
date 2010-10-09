@@ -40,6 +40,12 @@ public class Buffer {
 	   id = ID;
    }
    
+   /* Returns the block allocated to buffer.
+     */
+   public Block getBlock(){
+	   return blk;
+   }
+   
    /**
     * Returns the integer value at the specified offset of the
     * buffer's page.
