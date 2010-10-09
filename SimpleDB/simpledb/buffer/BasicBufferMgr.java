@@ -1,6 +1,7 @@
 package simpledb.buffer;
 
 import simpledb.file.*;
+
 import java.util.*;
 /**
  * Manages the pinning and unpinning of buffers to blocks.
@@ -48,6 +49,8 @@ class BasicBufferMgr {
     * If there is already a buffer assigned to that block
     * then that buffer is used;  
     * otherwise, an unpinned buffer from the pool is chosen.
+    * removes the entry from bufferpoolmap
+    * adds the new mappping to bufferpoolmap
     * Returns a null value if there are no available buffers.
     * @param blk a reference to a disk block
     * @return the pinned buffer
@@ -58,13 +61,23 @@ class BasicBufferMgr {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
             return null;     
-         buff.assignToBlock(blk);    
+         buff.assignToBlock(blk);  
+         Set<Block> blocks = bufferPoolMap.keySet();
+         for (Iterator<Block> i = blocks.iterator(); i.hasNext();) 
+         {
+        	 Block bk = (Block) i.next();
+             Buffer value = (Buffer) bufferPoolMap.get(bk);
+             if(buff.equals(value))
+             {
+            	 bufferPoolMap.remove(bk);
+                 break;
+             }
+         }
+         bufferPoolMap.put(blk, buff);
       }
       if (!buff.isPinned())
          numAvailable--;
-      buff.pin();
-      bufferPoolMap.remove(blk);
-      bufferPoolMap.put(blk, buff);
+      buff.pin();   
       //System.err.println(toString());
       return buff;
    }
@@ -90,7 +103,7 @@ class BasicBufferMgr {
    }
    
    /**
-    * Unpins the specified buffer.
+    * Unpins the specified buffer. 
     * @param buff the buffer to be unpinned
     */
    synchronized void unpin(Buffer buff) {
