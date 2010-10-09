@@ -12,10 +12,11 @@ class BasicBufferMgr {
    private Buffer[] bufferpool;
    private int numAvailable;
    private int clockPosition;
-   private Map<Block,Buffer> bufferPoolMap=new HashMap<Block,Buffer>(); 
+   private Map<Block,Buffer> bufferPoolMap; 
    /**
     * Creates a buffer manager having the specified number 
     * of buffer slots.
+    * creates bufferpoolmap for mappping the buffers with blocks.
     * This constructor depends on both the {@link FileMgr} and
     * {@link simpledb.log.LogMgr LogMgr} objects 
     * that it gets from the class
@@ -32,6 +33,7 @@ class BasicBufferMgr {
       clockPosition = 0;
       for (int i=0; i<numbuffs; i++)
          bufferpool[i] = new Buffer(i);
+      bufferPoolMap=new HashMap<Block,Buffer>(); 
    }
    
    /**
@@ -85,6 +87,8 @@ class BasicBufferMgr {
    /**
     * Allocates a new block in the specified file, and
     * pins a buffer to it. 
+    * Removes the current entry of buffer in the bufferpoolmap.
+    * Inserts new entry in the bufferpoolmap.
     * Returns null (without allocating the block) if 
     * there are no available buffers.
     * @param filename the name of the file
@@ -95,6 +99,17 @@ class BasicBufferMgr {
       Buffer buff = chooseUnpinnedBuffer();
       if (buff == null)
          return null;
+      Set<Block> blocks = bufferPoolMap.keySet();
+      for (Iterator<Block> i = blocks.iterator(); i.hasNext();) 
+      {
+     	 Block bk = (Block) i.next();
+          Buffer value = (Buffer) bufferPoolMap.get(bk);
+          if(buff.equals(value))
+          {
+         	 bufferPoolMap.remove(bk);
+              break;
+          }
+      }
       Block blk=buff.assignToNew(filename, fmtr);
       numAvailable--;
       buff.pin();
@@ -174,6 +189,11 @@ class BasicBufferMgr {
    boolean containsMapping(Block blk) {
    return bufferPoolMap.containsKey(blk);
    }
+   /**
+   * Returns the buffer that the map maps the specified block to.
+   * @param blk the block to use as a key
+   * @return the buffer mapped to if there is a mapping; null otherwise
+   */
    Buffer getMapping(Block blk) {
 	   return bufferPoolMap.get(blk);
 	   }
