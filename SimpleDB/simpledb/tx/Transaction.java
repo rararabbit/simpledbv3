@@ -5,7 +5,7 @@ import simpledb.file.Block;
 import simpledb.buffer.*;
 import simpledb.tx.recovery.RecoveryMgr;
 import simpledb.tx.concurrency.ConcurrencyMgr;
-
+import java.util.ArrayList;
 /**
  * Provides transaction management for clients,
  * ensuring that all transactions are serializable, recoverable,
@@ -19,7 +19,7 @@ public class Transaction {
    private ConcurrencyMgr concurMgr;
    private int txnum;
    private BufferList myBuffers = new BufferList();
-   
+   private static ArrayList<Integer> activeTransactions=new ArrayList<Integer>();
    /**
     * Creates a new transaction and its associated 
     * recovery and concurrency managers.
@@ -32,37 +32,47 @@ public class Transaction {
     * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
     * is called first.
     */
+   
    public Transaction() {
       txnum       = nextTxNumber();
       recoveryMgr = new RecoveryMgr(txnum);
       concurMgr   = new ConcurrencyMgr();
+      activeTransactions.add(txnum);
    }
-   
+   /** returns the list of active transactions
+    */
+   public static ArrayList<Integer> getActive(){
+	   return activeTransactions;
+   }
+  
    /**
     * Commits the current transaction.
     * Flushes all modified buffers (and their log records),
     * writes and flushes a commit record to the log,
     * releases all locks, and unpins any pinned buffers.
+    * Removes the transaction from active transactions list.
     */
    public void commit() {
       recoveryMgr.commit();
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " committed");
+      activeTransactions.remove(txnum);
    }
-   
    /**
     * Rolls back the current transaction.
     * Undoes any modified values,
     * flushes those buffers,
     * writes and flushes a rollback record to the log,
     * releases all locks, and unpins any pinned buffers.
+    * * Removes the transaction from active transactions list.
     */
    public void rollback() {
       recoveryMgr.rollback();
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " rolled back");
+      activeTransactions.remove(txnum);
    }
    
    /**
