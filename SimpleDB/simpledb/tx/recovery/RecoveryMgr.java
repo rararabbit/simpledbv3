@@ -5,6 +5,7 @@ import simpledb.file.Block;
 import simpledb.buffer.Buffer;
 import simpledb.server.SimpleDB;
 import java.util.*;
+import simpledb.tx.Transaction;
 
 /**
  * The recovery manager.  Each transaction has its own recovery manager.
@@ -43,12 +44,16 @@ public class RecoveryMgr {
 
    /**
     * Recovers uncompleted transactions from the log,
-    * then writes a quiescent checkpoint record to the log and flushes it.
+    * then creates a nonquiescent checkpoint record 
+    * by passing the list of active transactions
+    * to the constructor NQCheckpoint 
+    * and writes the record to the log and flushes it.
     */
    public void recover() {
       doRecover();
       SimpleDB.bufferMgr().flushAll(txnum);
-      int lsn = new CheckpointRecord().writeToLog();
+     // int lsn = new CheckpointRecord().writeToLog();
+      int lsn=new NQCheckpoint(Transaction.getActive()).writeToLog();
       SimpleDB.logMgr().flush(lsn);
 
    }
@@ -111,18 +116,48 @@ public class RecoveryMgr {
     * The method iterates through the log records.
     * Whenever it finds a log record for an unfinished
     * transaction, it calls undo() on that record.
-    * The method stops when it encounters a CHECKPOINT record
+    * Whenever it finds a CHECKPOINT record it looks
+    * for the first uncommitted transaction in the list
+    * of active transactions and set it as the checkpoint transaction
+    * It does the recovery procedure until it encounters
+    * the start record of the checkpoint transaction
     * or the end of the log.
     */
    private void doRecover() {
+	   int chkpointTrans=-1;
+	   ArrayList<Integer> recActiveTransactions=null;
       Collection<Integer> finishedTxs = new ArrayList<Integer>();
       Iterator<LogRecord> iter = new LogRecordIterator();
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
-         if (rec.op() == CHECKPOINT)
-            return;
+       //  if (rec.op() == CHECKPOINT)
+         //   return;
+         if(rec.op()==CHECKPOINT)
+         {
+        	recActiveTransactions=rec.getactiveTrans(); 
+        	if(recActiveTransactions!=null)
+        	{
+        		for(Integer transId:recActiveTransactions)
+        		{
+        			if(!finishedTxs.contains(transId))
+        			{
+        				chkpointTrans=transId;
+        				break;
+        			}
+        				
+        		}
+        			
+        	}
+        	else
+        		return;
+         }
+        	 
          if (rec.op() == COMMIT || rec.op() == ROLLBACK)
             finishedTxs.add(rec.txNumber());
+         else if(rec.op()==START){
+        	 if(rec.txNumber()==chkpointTrans)
+        		 return;
+         }      	 
          else if (!finishedTxs.contains(rec.txNumber()))
             rec.undo(txnum);
       }
