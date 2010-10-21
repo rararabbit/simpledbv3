@@ -1,5 +1,7 @@
 package simpledb.tx.recovery;
 
+import java.util.ArrayList;
+
 import simpledb.log.BasicLogRecord;
 
 /**
@@ -24,7 +26,13 @@ class CommitRecord implements LogRecord {
    public CommitRecord(BasicLogRecord rec) {
       txnum = rec.nextInt();
    }
-   
+   /**Returns null,as it is not associated
+    * with list of active transactions
+    * 
+    */
+   public ArrayList<Integer> getactiveTrans(){
+	return null;
+	}
    /** 
     * Writes a commit record to the log.
     * This log record contains the COMMIT operator,

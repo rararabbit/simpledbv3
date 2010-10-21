@@ -1,5 +1,7 @@
 package simpledb.tx.recovery;
 
+import java.util.ArrayList;
+
 import simpledb.log.BasicLogRecord;
 
 /**
@@ -30,7 +32,13 @@ class CheckpointRecord implements LogRecord {
       Object[] rec = new Object[] {CHECKPOINT};
       return logMgr.append(rec);
    }
-   
+   /**Returns null,as it is not associated
+    * with list of active transactions
+    * 
+    */
+   public ArrayList<Integer> getactiveTrans(){
+	return null;
+	}
    public int op() {
       return CHECKPOINT;
    }
