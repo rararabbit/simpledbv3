@@ -31,15 +31,19 @@ public class Transaction {
     * {@link simpledb.server.SimpleDB#init(String)} or 
     * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
     * is called first.
-    */
-   
+    */   
    public Transaction() {
       txnum       = nextTxNumber();
       recoveryMgr = new RecoveryMgr(txnum);
       concurMgr   = new ConcurrencyMgr();
-      activeTransactions.add(txnum);
+      activeTransactions.add(txnum);  
+      if ((txnum % 5) == 0)
+    	  recoveryMgr.checkpoint();
    }
-   /** returns the list of active transactions
+   
+   /** 
+    * Returns the list of active transactions.
+    * @return active list
     */
    public static ArrayList<Integer> getActive(){
 	   return activeTransactions;
@@ -57,22 +61,23 @@ public class Transaction {
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " committed");
-      activeTransactions.remove(txnum);
+      activeTransactions.remove((Integer)txnum);
    }
+   
    /**
     * Rolls back the current transaction.
     * Undoes any modified values,
     * flushes those buffers,
     * writes and flushes a rollback record to the log,
     * releases all locks, and unpins any pinned buffers.
-    * * Removes the transaction from active transactions list.
+    * Removes the transaction from active transactions list.
     */
    public void rollback() {
       recoveryMgr.rollback();
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " rolled back");
-      activeTransactions.remove(txnum);
+      activeTransactions.remove((Integer)txnum);
    }
    
    /**
