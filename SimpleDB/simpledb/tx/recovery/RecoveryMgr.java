@@ -124,43 +124,30 @@ public class RecoveryMgr {
     * or the end of the log.
     */
    private void doRecover() {
-	   int chkpointTrans=-1;
 	   ArrayList<Integer> recActiveTransactions=null;
-      Collection<Integer> finishedTxs = new ArrayList<Integer>();
-      Iterator<LogRecord> iter = new LogRecordIterator();
-      while (iter.hasNext()) {
-         LogRecord rec = iter.next();
-       //  if (rec.op() == CHECKPOINT)
-         //   return;
-         if(rec.op()==CHECKPOINT)
-         {
-        	recActiveTransactions=rec.getactiveTrans(); 
-        	if(recActiveTransactions!=null)
-        	{
-        		for(Integer transId:recActiveTransactions)
-        		{
-        			if(!finishedTxs.contains(transId))
-        			{
-        				chkpointTrans=transId;
-        				break;
-        			}
-        				
-        		}
-        			
-        	}
-        	else
-        		return;
-         }
-        	 
-         if (rec.op() == COMMIT || rec.op() == ROLLBACK)
-            finishedTxs.add(rec.txNumber());
-         else if(rec.op()==START){
-        	 if(rec.txNumber()==chkpointTrans)
-        		 return;
-         }      	 
-         else if (!finishedTxs.contains(rec.txNumber()))
-            rec.undo(txnum);
-      }
+	   Collection<Integer> finishedTxs = new ArrayList<Integer>();
+	   Iterator<LogRecord> iter = new LogRecordIterator();
+	   while (iter.hasNext()) {
+		   LogRecord rec = iter.next();
+		   System.out.println(rec);
+		   if(rec.op()==CHECKPOINT) {
+			   recActiveTransactions=rec.getactiveTrans();
+			   //Were no active transactions at time of checkpoint
+			   if(recActiveTransactions==null || recActiveTransactions.size() == 0)
+				   return;
+		   } else if (rec.op() == COMMIT || rec.op() == ROLLBACK)
+			   finishedTxs.add(rec.txNumber());
+		   else if(rec.op()==START){
+			   //Find the earliest START of an active transaction after checkpoint has been encountered
+			   if (!(recActiveTransactions==null)){
+				   recActiveTransactions.remove((Integer)rec.txNumber());
+				   if (recActiveTransactions.size() == 0)
+					   return;
+			   }
+		   }      	 
+		   else if (!finishedTxs.contains(rec.txNumber()))
+			   rec.undo(txnum);
+	   }
    }
 
    /**
@@ -168,5 +155,18 @@ public class RecoveryMgr {
     */
    private boolean isTempBlock(Block blk) {
       return blk.fileName().startsWith("temp");
+   }
+   
+   
+   /**
+    * Flushes buffers to disk and writes a nonquiescent checkpoint record
+    */
+   public void checkpoint(){
+	   ArrayList<Integer> active = Transaction.getActive();
+	   for(Integer acttr:active) {
+		   SimpleDB.bufferMgr().flushAll(acttr);
+	   }
+	   int lsn=new NQCheckpoint(active).writeToLog();
+	   SimpleDB.logMgr().flush(lsn);
    }
 }

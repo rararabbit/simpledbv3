@@ -22,13 +22,15 @@ class StartRecord implements LogRecord {
    public StartRecord(BasicLogRecord rec) {
       txnum = rec.nextInt();
    }
-   /**Returns null,as it is not associated
+   
+   /**
+    * Returns null,as it is not associated
     * with list of active transactions
-    * 
     */
    public ArrayList<Integer> getactiveTrans(){
-	return null;
-	}
+	   return null;
+   }
+   
    /** 
     * Writes a start record to the log.
     * This log record contains the START operator,

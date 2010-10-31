@@ -32,13 +32,15 @@ class CheckpointRecord implements LogRecord {
       Object[] rec = new Object[] {CHECKPOINT};
       return logMgr.append(rec);
    }
-   /**Returns null,as it is not associated
-    * with list of active transactions
-    * 
+   
+   /**
+    * Returns null,as it is not associated
+    * with list of active transactions 
     */
    public ArrayList<Integer> getactiveTrans(){
-	return null;
-	}
+	   return null;
+   }
+   
    public int op() {
       return CHECKPOINT;
    }

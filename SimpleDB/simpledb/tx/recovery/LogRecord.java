@@ -37,6 +37,7 @@ public interface LogRecord {
     * @return the log record's transaction id
     */
    int txNumber();
+   
    /**
     * Returns the active transactions 
     * associated with the record,specifically
