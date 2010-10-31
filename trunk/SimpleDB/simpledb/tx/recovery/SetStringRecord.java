@@ -25,13 +25,15 @@ class SetStringRecord implements LogRecord {
       this.offset = offset;
       this.val = val;
    }
-   /**Returns null,as it is not associated
+   
+   /**
+    * Returns null,as it is not associated
     * with list of active transactions
-    * 
     */
    public ArrayList<Integer> getactiveTrans(){
-	return null;
-	}
+	   return null;
+   }
+   
    /**
     * Creates a log record by reading five other values from the log.
     * @param rec the basic log record

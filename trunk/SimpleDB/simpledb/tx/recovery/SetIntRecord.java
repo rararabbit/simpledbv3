@@ -51,13 +51,14 @@ class SetIntRecord implements LogRecord {
          blk.number(), offset, val};
       return logMgr.append(rec);
    }
-   /**Returns null,as it is not associated
+   
+   /**
+    * Returns null,as it is not associated
     * with list of active transactions
-    * 
     */
    public ArrayList<Integer> getactiveTrans(){
-	return null;
-	}
+	   return null;
+   }
 
    public int op() {
       return SETINT;

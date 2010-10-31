@@ -18,13 +18,15 @@ class RollbackRecord implements LogRecord {
    public RollbackRecord(int txnum) {
       this.txnum = txnum;
    }
-   /**Returns null,as it is not associated
-    * with list of active transactions
-    * 
+   
+   /**
+    * Returns null,as it is not associated
+    * with list of active transactions 
     */
    public ArrayList<Integer> getactiveTrans(){
-	return null;
-	}
+	   return null;
+   }
+   
    /**
     * Creates a log record by reading one other value from the log.
     * @param rec the basic log record
