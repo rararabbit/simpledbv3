@@ -68,7 +68,6 @@ public class NQCheckpoint implements LogRecord {
 	public String toString() {
 		boolean first = true;
 		String out = "<CHECKPOINT";
-		ArrayList<Object> chkPoint = new ArrayList<Object>();
 		for(Integer acttr:activeTransacts) {
 			if (first)
 				out = out + " " + acttr;
