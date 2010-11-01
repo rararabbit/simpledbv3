@@ -66,10 +66,15 @@ public class NQCheckpoint implements LogRecord {
 	public void undo(int txnum) {}
 
 	public String toString() {
+		boolean first = true;
 		String out = "<CHECKPOINT";
 		ArrayList<Object> chkPoint = new ArrayList<Object>();
 		for(Integer acttr:activeTransacts) {
-			out = out + ", " + acttr;
+			if (first)
+				out = out + " " + acttr;
+			else
+				out = out + ", " + acttr;
+			first = false;
 		}
 		return out + ">";
 	}
