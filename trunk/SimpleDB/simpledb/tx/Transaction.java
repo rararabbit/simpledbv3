@@ -33,12 +33,20 @@ public class Transaction {
     * is called first.
     */   
    public Transaction() {
-      txnum       = nextTxNumber();
+	  txnum       = nextTxNumber();
       recoveryMgr = new RecoveryMgr(txnum);
       concurMgr   = new ConcurrencyMgr();
-      activeTransactions.add(txnum);  
-      if ((txnum % 5) == 0)
-    	  recoveryMgr.checkpoint();
+      //Prevent a new transaction from being added if checkpoint is being carried out
+      //As a side effect prevents 2 transactions from being created at exactly the same time, but nextTxNumber() already does this.
+      synchronized(activeTransactions) {
+    	  activeTransactions.add(txnum);  
+      }
+      if ((txnum % 5) == 0) {
+    	  //Allow only the checkpoint method to access activeTransactions, thus preventing new transactions
+    	  synchronized(activeTransactions) {
+    		  recoveryMgr.checkpoint();
+    	  }
+      }
    }
    
    /** 
