@@ -19,9 +19,7 @@ public class Buffer {
    private int pins = 0;
    private int modifiedBy = -1;  // negative means not modified
    private int logSequenceNumber = -1; // negative means no corresponding log record
-   private int id = 0;
-   private boolean referenced = false;
-   
+
    /**
     * Creates a new buffer, wrapping a new 
     * {@link simpledb.file.Page page}.  
@@ -36,17 +34,7 @@ public class Buffer {
     * {@link simpledb.server.SimpleDB#initFileAndLogMgr(String)} or
     * is called first.
     */
-   public Buffer(int ID) {
-	   id = ID;
-   }
-   
-   /**
-    *  Returns the block allocated to buffer.
-    *  @return the block
-    */
-   public Block getBlock(){
-	   return blk;
-   }
+   public Buffer() {}
    
    /**
     * Returns the integer value at the specified offset of the
@@ -150,7 +138,6 @@ public class Buffer {
     */
    void unpin() {
       pins--;
-      referenced = true;
    }
 
    /**
@@ -194,40 +181,10 @@ public class Buffer {
     * @param filename the name of the file
     * @param fmtr a page formatter, used to initialize the page
     */
-    Block assignToNew(String filename, PageFormatter fmtr) {
+   void assignToNew(String filename, PageFormatter fmtr) {
       flush();
       fmtr.format(contents);
       blk = contents.append(filename);
       pins = 0;
-      return blk;
-   }
-   
-   /**
-    * Sets the reference flag to false
-    * Used for the clock buffer algorithm
-    */
-   public void clearReference(){
-	   referenced = false;
-   }
-   
-   /**
-    * Gets the status of the reference flag
-    * @return The state of the reference flag
-    */
-   public boolean referenced(){
-	   return referenced;
-   }
-   
-   /**
-    * Formats the info for a buffer into a multiline string
-    * @return The string with buffer info
-    */
-   public String toString() {
-	   String out = "";
-	   out = out + "Buffer ID " + id + "\n";
-	   out = out + "Block " + (blk!=null?blk.number() + " of file " + blk.fileName():"None") + "\n";
-	   out = out + (isPinned()?"Is":"Is not") + " currently pinned\n";
-	   out = out + "Reference Flag = " + referenced + "\n";
-	   return out;
    }
 }
