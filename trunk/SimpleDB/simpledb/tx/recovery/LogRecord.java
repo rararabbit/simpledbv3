@@ -42,7 +42,7 @@ public interface LogRecord {
     * Returns the active transactions 
     * associated with the record,specifically
     * for checkpoint record
-    * @return
+    * @return The active transactions
     */
    ArrayList<Integer> getactiveTrans();
    
