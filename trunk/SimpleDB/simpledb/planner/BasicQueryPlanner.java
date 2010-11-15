@@ -38,6 +38,11 @@ public class BasicQueryPlanner implements QueryPlanner {
       
       //Step 4: Project on the field names
       p = new ProjectPlan(p, data.fields());
+      
+//TODO change this to private if modify querydata is ok
+      if (data.next != null)
+    	  p = new UnionPlan(p, createPlan(data.next, tx));
+      
       return p;
    }
 }

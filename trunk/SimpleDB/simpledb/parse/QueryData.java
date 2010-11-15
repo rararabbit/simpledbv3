@@ -11,6 +11,7 @@ public class QueryData {
    private Collection<String> fields;
    private Collection<String> tables;
    private Predicate pred;
+   public QueryData next = null;
    
    /**
     * Saves the field and table list and predicate.
@@ -19,6 +20,16 @@ public class QueryData {
       this.fields = fields;
       this.tables = tables;
       this.pred = pred;
+   }
+   
+   /**
+    * Saves the field and table list and predicate and attaches another QueryData.
+    */
+   public QueryData(Collection<String> fields, Collection<String> tables, Predicate pred, QueryData additional) {
+      this.fields = fields;
+      this.tables = tables;
+      this.pred = pred;
+      next = additional;
    }
    
    /**
