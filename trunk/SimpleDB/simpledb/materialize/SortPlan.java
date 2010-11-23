@@ -22,7 +22,7 @@ public class SortPlan implements Plan {
     * @param sortfields the fields to sort by
     * @param tx the calling transaction
     */
-   public SortPlan(Plan p, List<String> sortfields, Transaction tx) {
+   public SortPlan(Plan p, Collection<String> sortfields, Transaction tx) {
       this.p = p;
       this.tx = tx;
       sch = p.schema();

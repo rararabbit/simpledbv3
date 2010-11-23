@@ -9,6 +9,8 @@ import java.util.*;
  */
 public class QueryData {
    private Collection<String> fields;
+   List<String> fldnam1=null;
+   List<String> fldnam2=null;
    private Collection<String> tables;
    private Predicate pred;
    public QueryData next = null;
@@ -21,7 +23,7 @@ public class QueryData {
       this.tables = tables;
       this.pred = pred;
    }
-   
+  
    /**
     * Saves the field and table list and predicate and attaches another QueryData.
     */

@@ -8,14 +8,14 @@ import java.util.*;
  * @author Edward Sciore
  */
 public class RecordComparator implements Comparator<Scan> {
-   private List<String> fields;
+   private Collection<String> fields;
    
    /**
     * Creates a comparator using the specified fields,
     * using the ordering implied by its iterator.
     * @param fields a list of field names
     */
-   public RecordComparator(List<String> fields) {
+   public RecordComparator(Collection<String> fields) {
       this.fields = fields;
    }
    
