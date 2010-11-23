@@ -1,6 +1,9 @@
 package simpledb.query;
 
+import java.util.Collection;
+import simpledb.materialize.SortPlan;
 import simpledb.record.Schema;
+import simpledb.tx.Transaction;
 
 
 /** The Plan class corresponding to the <i>union</i>
@@ -8,8 +11,9 @@ import simpledb.record.Schema;
   * @author Edward Sciore
   */
 public class UnionPlan implements Plan {
-   private Plan p1, p2;
-   private Schema schema = new Schema();
+	 private Plan p1, p2;
+	   private Collection<String> fldname1, fldname2;
+	   private Schema sch = new Schema();
    
    /**
     * Creates a new union node in the query tree,
@@ -17,16 +21,19 @@ public class UnionPlan implements Plan {
     * @param p1 the left-hand subquery
     * @param p2 the right-hand subquery
     */
-   public UnionPlan(Plan p1, Plan p2) {
+   public UnionPlan(Plan p1, Plan p2,Transaction tx) {
       this.p1 = p1;
       this.p2 = p2;
       
       //Only want fields that are present in both
-      for (String field : p1.schema().fields()) {
-    	  if (p2.schema().fields().contains(field)){
-    		  schema.addField(field, p1.schema().type(field), p1.schema().length(field));
-    	  }
-      }
+      Collection<String> sortlist1 =p1.schema().fields();
+      this.p1 = new SortPlan(p1, sortlist1, tx);
+      
+      Collection<String> sortlist2 =p2.schema().fields();
+      this.p2 = new SortPlan(p2, sortlist2, tx);
+      
+      sch.addAll(p1.schema());
+      sch.addAll(p2.schema());
       
    }
    
@@ -35,10 +42,10 @@ public class UnionPlan implements Plan {
     * @see simpledb.query.Plan#open()
     */
    public Scan open() {
-      Scan s1 = p1.open();
-      Scan s2 = p2.open();
-      return new UnionScan(s1, s2);
-   }
+	      Scan s1 = p1.open();
+	      Scan s2 =  p2.open();
+	      return new UnionScan(s1, s2, fldname1, fldname2);
+	   }
    
    /**
     * Estimates the number of block accesses in the union.
@@ -79,6 +86,6 @@ public class UnionPlan implements Plan {
     * @see simpledb.query.Plan#schema()
     */
    public Schema schema() {
-	  return schema;
+	  return sch;
    }
 }

@@ -41,7 +41,7 @@ public class BasicQueryPlanner implements QueryPlanner {
       
 //TODO change this to private if modify querydata is ok
       if (data.next != null)
-    	  p = new UnionPlan(p, createPlan(data.next, tx));
+    	  p = new UnionPlan(p, createPlan(data.next, tx),tx);
       
       return p;
    }
