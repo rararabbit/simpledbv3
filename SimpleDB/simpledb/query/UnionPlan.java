@@ -24,16 +24,21 @@ public class UnionPlan implements Plan {
    public UnionPlan(Plan p1, Plan p2,Transaction tx) {
       this.p1 = p1;
       this.p2 = p2;
-      
       //Only want fields that are present in both
-      Collection<String> sortlist1 =p1.schema().fields();
-      this.p1 = new SortPlan(p1, sortlist1, tx);
+      for (String field : p1.schema().fields()) {
+    	  if (p2.schema().fields().contains(field)){
+    		  sch.addField(field, p1.schema().type(field), p1.schema().length(field));
+    	  }
+      }
+
+      fldname1 = sch.fields();
+      this.p1 = new SortPlan(p1,  sch.fields(), tx);
       
-      Collection<String> sortlist2 =p2.schema().fields();
-      this.p2 = new SortPlan(p2, sortlist2, tx);
+      fldname2 =sch.fields();
+      this.p2 = new SortPlan(p2, sch.fields(), tx);
       
-      sch.addAll(p1.schema());
-      sch.addAll(p2.schema());
+      //sch.addAll(p1.schema());
+      //sch.addAll(p2.schema());
       
    }
    
@@ -56,7 +61,7 @@ public class UnionPlan implements Plan {
    public int blocksAccessed() {
       return p1.blocksAccessed() + p2.blocksAccessed();
    }
- //TODO
+
    /**
     * Estimates the number of output records in the union.
     * The formula is:
@@ -66,7 +71,7 @@ public class UnionPlan implements Plan {
    public int recordsOutput() {
       return p1.recordsOutput() + p2.recordsOutput();
    }
- //TODO
+
    /**
     * Estimates the distinct number of field values in the product.
     * Since the product does not increase or decrease field values,
@@ -74,10 +79,7 @@ public class UnionPlan implements Plan {
     * @see simpledb.query.Plan#distinctValues(java.lang.String)
     */
    public int distinctValues(String fldname) {
-      if (p1.schema().hasField(fldname))
-         return p1.distinctValues(fldname);
-      else
-         return p2.distinctValues(fldname);
+         return p1.distinctValues(fldname) + p2.distinctValues(fldname);
    }
 
    /**

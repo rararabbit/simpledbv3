@@ -1,7 +1,5 @@
 package simpledb.tx.recovery;
 
-import java.util.ArrayList;
-
 import simpledb.server.SimpleDB;
 import simpledb.buffer.*;
 import simpledb.file.Block;
@@ -50,14 +48,6 @@ class SetIntRecord implements LogRecord {
       Object[] rec = new Object[] {SETINT, txnum, blk.fileName(),
          blk.number(), offset, val};
       return logMgr.append(rec);
-   }
-   
-   /**
-    * Returns null,as it is not associated
-    * with list of active transactions
-    */
-   public ArrayList<Integer> getactiveTrans(){
-	   return null;
    }
 
    public int op() {

@@ -5,7 +5,7 @@ import simpledb.file.Block;
 import simpledb.buffer.*;
 import simpledb.tx.recovery.RecoveryMgr;
 import simpledb.tx.concurrency.ConcurrencyMgr;
-import java.util.ArrayList;
+
 /**
  * Provides transaction management for clients,
  * ensuring that all transactions are serializable, recoverable,
@@ -19,7 +19,7 @@ public class Transaction {
    private ConcurrencyMgr concurMgr;
    private int txnum;
    private BufferList myBuffers = new BufferList();
-   private static ArrayList<Integer> activeTransactions=new ArrayList<Integer>();
+   
    /**
     * Creates a new transaction and its associated 
     * recovery and concurrency managers.
@@ -31,45 +31,24 @@ public class Transaction {
     * {@link simpledb.server.SimpleDB#init(String)} or 
     * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
     * is called first.
-    */   
+    */
    public Transaction() {
-	  txnum       = nextTxNumber();
+      txnum       = nextTxNumber();
       recoveryMgr = new RecoveryMgr(txnum);
       concurMgr   = new ConcurrencyMgr();
-      //Prevent a new transaction from being added if checkpoint is being carried out
-      //As a side effect prevents 2 transactions from being created at exactly the same time, but nextTxNumber() already does this.
-      synchronized(activeTransactions) {
-    	  activeTransactions.add(txnum);  
-      }
-      if ((txnum % 5) == 0) {
-    	  //Allow only the checkpoint method to access activeTransactions, thus preventing new transactions
-    	  synchronized(activeTransactions) {
-    		  recoveryMgr.checkpoint();
-    	  }
-      }
    }
    
-   /** 
-    * Returns the list of active transactions.
-    * @return active list
-    */
-   public static ArrayList<Integer> getActive(){
-	   return activeTransactions;
-   }
-  
    /**
     * Commits the current transaction.
     * Flushes all modified buffers (and their log records),
     * writes and flushes a commit record to the log,
     * releases all locks, and unpins any pinned buffers.
-    * Removes the transaction from active transactions list.
     */
    public void commit() {
       recoveryMgr.commit();
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " committed");
-      activeTransactions.remove((Integer)txnum);
    }
    
    /**
@@ -78,14 +57,12 @@ public class Transaction {
     * flushes those buffers,
     * writes and flushes a rollback record to the log,
     * releases all locks, and unpins any pinned buffers.
-    * Removes the transaction from active transactions list.
     */
    public void rollback() {
       recoveryMgr.rollback();
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " rolled back");
-      activeTransactions.remove((Integer)txnum);
    }
    
    /**

@@ -34,7 +34,7 @@ class LogRecordIterator implements Iterator<LogRecord> {
       int op = rec.nextInt();
       switch (op) {
          case CHECKPOINT:
-            return new NQCheckpoint(rec);
+            return new CheckpointRecord(rec);
          case START:
             return new StartRecord(rec);
          case COMMIT:
