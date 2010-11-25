@@ -13,8 +13,8 @@ public class UnionScan implements Scan {
 	private Scan s1;
 	private Scan s2,currentscan;
     Collection<String> fldname1, fldname2;
-    private boolean hasmore1, hasmore2=false;
     private RecordComparator comp;
+    boolean onS1 = true;
    /**
     * Creates a union scan having the two underlying scans.
     * @param s1 the LHS scan
@@ -23,8 +23,10 @@ public class UnionScan implements Scan {
    public UnionScan(Scan s1, Scan s2, Collection<String> fldname1, Collection<String> fldname2) {
 	      this.s1 = s1;
 	      this.s2 = s2;
+	      currentscan = s1;
 	      this.fldname1 = fldname1;
 	      this.fldname2 = fldname2;
+	      comp = new RecordComparator(fldname1);
 	      beforeFirst();
 	   }
    
@@ -48,31 +50,28 @@ public class UnionScan implements Scan {
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
-	   if (currentscan != null) {
-	         if (currentscan == s1)
-	            hasmore1 = s1.next();
-	         else if (currentscan == s2)
-	            hasmore2 = s2.next();
-	      }
-	      
-	      if (!hasmore1 && !hasmore2)
-	         return false;
-	      else if (hasmore1 && hasmore2) {
-	         if (comp.compare(s1, s2) < 0)
-	            currentscan = s1;
-	         else if(comp.compare(s1, s2) == 0){
-	        	 currentscan=s1;
-	        	 s2.next();
-	         }
-	         else
-	            currentscan = s2;
-	      }
-	      else if (hasmore1)
-	         currentscan = s1;
-	      else if (hasmore2)
-	         currentscan = s2;
-	      return true;
-		 
+	      if (onS1 && s1.next()){
+	    	  currentscan = s1;
+	          return true;
+	      } else {
+	    	   currentscan = s2;
+	    	   boolean next = s2.next();
+	    	   if (!next)
+	    		   return false;
+	    	   s1.beforeFirst();
+	    	   boolean more = true;
+	    	   while (more){
+	    		   if (comp.compare(s1, s2) == 0){
+	    			   next = s2.next();
+	    			   if (!next)
+	    				   return false;
+	    			   s1.beforeFirst();
+	    		   }
+	    		   more = s1.next();
+	    	   }
+	    	  onS1 = false;
+	          return next;
+	       }
 	   }
    
    /**

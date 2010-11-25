@@ -1,7 +1,5 @@
 package simpledb.tx.recovery;
 
-import java.util.ArrayList;
-
 import simpledb.server.SimpleDB;
 import simpledb.buffer.*;
 import simpledb.file.Block;
@@ -24,14 +22,6 @@ class SetStringRecord implements LogRecord {
       this.blk = blk;
       this.offset = offset;
       this.val = val;
-   }
-   
-   /**
-    * Returns null,as it is not associated
-    * with list of active transactions
-    */
-   public ArrayList<Integer> getactiveTrans(){
-	   return null;
    }
    
    /**

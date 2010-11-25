@@ -1,7 +1,5 @@
 package simpledb.tx.recovery;
 
-import java.util.ArrayList;
-
 import simpledb.log.BasicLogRecord;
 
 /**
@@ -17,14 +15,6 @@ class RollbackRecord implements LogRecord {
     */
    public RollbackRecord(int txnum) {
       this.txnum = txnum;
-   }
-   
-   /**
-    * Returns null,as it is not associated
-    * with list of active transactions 
-    */
-   public ArrayList<Integer> getactiveTrans(){
-	   return null;
    }
    
    /**

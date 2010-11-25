@@ -1,7 +1,5 @@
 package simpledb.tx.recovery;
 
-import java.util.ArrayList;
-
 import simpledb.log.BasicLogRecord;
 
 class StartRecord implements LogRecord {
@@ -21,14 +19,6 @@ class StartRecord implements LogRecord {
     */
    public StartRecord(BasicLogRecord rec) {
       txnum = rec.nextInt();
-   }
-   
-   /**
-    * Returns null,as it is not associated
-    * with list of active transactions
-    */
-   public ArrayList<Integer> getactiveTrans(){
-	   return null;
    }
    
    /** 

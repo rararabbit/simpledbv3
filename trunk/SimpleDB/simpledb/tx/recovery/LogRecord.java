@@ -1,7 +1,5 @@
 package simpledb.tx.recovery;
 
-import java.util.ArrayList;
-
 import simpledb.log.LogMgr;
 import simpledb.server.SimpleDB;
 
@@ -37,14 +35,6 @@ public interface LogRecord {
     * @return the log record's transaction id
     */
    int txNumber();
-   
-   /**
-    * Returns the active transactions 
-    * associated with the record,specifically
-    * for checkpoint record
-    * @return The active transactions
-    */
-   ArrayList<Integer> getactiveTrans();
    
    /**
     * Undoes the operation encoded by this log record.
