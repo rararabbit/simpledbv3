@@ -1,8 +1,6 @@
 package simpledb.query;
 
-import java.util.Collection;
-
-import simpledb.materialize.RecordComparator;
+import java.util.HashMap;
 
 //TODO remove duplicates
 /**
@@ -10,26 +8,19 @@ import simpledb.materialize.RecordComparator;
  * algebra operator.
  */
 public class UnionScan implements Scan {
-	private Scan s1;
-	private Scan s2,currentscan;
-    Collection<String> fldname1, fldname2;
-    private RecordComparator comp;
-    boolean onS1 = true;
+   private Scan s1, s2;
+   private boolean onS1 = true;
+   private HashMap<String,String> fieldMatch;
    /**
     * Creates a union scan having the two underlying scans.
     * @param s1 the LHS scan
     * @param s2 the RHS scan
     */
-   public UnionScan(Scan s1, Scan s2, Collection<String> fldname1, Collection<String> fldname2) {
-	      this.s1 = s1;
-	      this.s2 = s2;
-	      currentscan = s1;
-	      this.fldname1 = fldname1;
-	      this.fldname2 = fldname2;
-	      comp = new RecordComparator(fldname1);
-	      beforeFirst();
-	   }
-   
+   public UnionScan(Scan s1, Scan s2, HashMap<String,String> fieldMatch) {
+      this.s1 = s1;
+      this.s2 = s2;
+      this.fieldMatch = fieldMatch;
+   }
    
    /**
     * Positions the scan before its first record.
@@ -43,36 +34,20 @@ public class UnionScan implements Scan {
    }
    
    /**
-    * Moves to the next record in sorted order.
-    * First, the current scan is moved to the next record.
-    * Then the lowest record of the two scans is found, and that
-    * scan is chosen to be the new current scan.
+    * Moves the scan to the next record.
+    * The method moves to the next LHS record until the end
+    * and then it moves through the RHS until the end.
+    * If there are no more LHS records, the method returns false.
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
-	      if (onS1 && s1.next()){
-	    	  currentscan = s1;
-	          return true;
-	      } else {
-	    	   currentscan = s2;
-	    	   boolean next = s2.next();
-	    	   if (!next)
-	    		   return false;
-	    	   s1.beforeFirst();
-	    	   boolean more = true;
-	    	   while (more){
-	    		   if (comp.compare(s1, s2) == 0){
-	    			   next = s2.next();
-	    			   if (!next)
-	    				   return false;
-	    			   s1.beforeFirst();
-	    		   }
-	    		   more = s1.next();
-	    	   }
-	    	  onS1 = false;
-	          return next;
-	       }
-	   }
+      if (onS1 && s1.next())
+          return true;
+       else {
+          onS1 = false;
+          return s2.next();
+       }
+   }
    
    /**
     * Closes both underlying scans.
@@ -90,33 +65,44 @@ public class UnionScan implements Scan {
     * @see simpledb.query.Scan#getVal(java.lang.String)
     */
    public Constant getVal(String fldname) {
-	      return currentscan.getVal(fldname);
-	   }
-	   
-	   /**
-	    * Gets the integer value of the specified field
-	    * of the current scan.
-	    * @see simpledb.query.Scan#getInt(java.lang.String)
-	    */
-	   public int getInt(String fldname) {
-	      return currentscan.getInt(fldname);
-	   }
-	   
-	   /**
-	    * Gets the string value of the specified field
-	    * of the current scan.
-	    * @see simpledb.query.Scan#getString(java.lang.String)
-	    */
-	   public String getString(String fldname) {
-	      return currentscan.getString(fldname);
-	   }
+      if (onS1)
+         return s1.getVal(fldname);
+      else
+         return s2.getVal(fieldMatch.get(fldname));
+   }
+   
+   /** 
+    * Returns the integer value of the specified field.
+    * The value is obtained from whichever scan
+    * is currently active.
+    * @see simpledb.query.Scan#getInt(java.lang.String)
+    */
+   public int getInt(String fldname) {
+           if (onS1)
+                   return s1.getInt(fldname);
+           else
+                   return s2.getInt(fieldMatch.get(fldname));
+   }
+   
+   /** 
+    * Returns the string value of the specified field.
+    * The value is obtained from whichever scan
+    * is currently active.
+    * @see simpledb.query.Scan#getString(java.lang.String)
+    */
+   public String getString(String fldname) {
+              if (onS1)
+                  return s1.getString(fldname);
+               else
+                  return s2.getString(fieldMatch.get(fldname));
+   }
    
    /**
     * Returns true if the specified field is in
     * both of the underlying scans.
     * @see simpledb.query.Scan#hasField(java.lang.String)
     */
-	   public boolean hasField(String fldname) {
-		      return currentscan.hasField(fldname);
-		   }
+   public boolean hasField(String fldname) {
+      return s1.hasField(fldname) && s2.hasField(fieldMatch.get(fldname));
+   }
 }
