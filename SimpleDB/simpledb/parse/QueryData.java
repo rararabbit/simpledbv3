@@ -9,11 +9,9 @@ import java.util.*;
  */
 public class QueryData {
    private Collection<String> fields;
-   List<String> fldnam1=null;
-   List<String> fldnam2=null;
    private Collection<String> tables;
    private Predicate pred;
-   public QueryData next = null;
+   private QueryData next = null;
    
    /**
     * Saves the field and table list and predicate.
@@ -58,6 +56,13 @@ public class QueryData {
    public Predicate pred() {
       return pred;
    }
+   /**
+    * Returns the next attached QueryData
+    * @return next QueryData
+    */
+   public QueryData next(){
+	   return next;
+   }
    
    public String toString() {
       String result = "select ";
@@ -71,6 +76,8 @@ public class QueryData {
       String predstring = pred.toString();
       if (!predstring.equals(""))
          result += " where " + predstring;
+      if (next != null)
+      	result += " union " + next;
       return result;
    }
 }
